@@ -3,22 +3,19 @@ import UIKit
 final class MovieQuizViewController: UIViewController {
     // MARK: - Lifecycle
     
-    @IBOutlet fileprivate var textLabel: UILabel!
-    @IBOutlet fileprivate var imageView: UIImageView!
-    @IBOutlet fileprivate var counterLabel: UILabel!
+    @IBOutlet private weak var textLabel: UILabel!
+    @IBOutlet private weak var imageView: UIImageView!
+    @IBOutlet private weak var counterLabel: UILabel!
+    @IBOutlet private weak var noButton: UIButton!
+    @IBOutlet private weak var yesButton: UIButton!
     
-    fileprivate struct QuizQuestion {
+    private struct QuizQuestion {
         let image: String
         let text: String
         let correctAnswer: Bool
-        init(image: String, text: String, correctAnswer: Bool) {
-            self.image = image
-            self.text = text
-            self.correctAnswer = correctAnswer
-        }
     }
     
-    fileprivate let questions: [QuizQuestion] = [
+    private let questions: [QuizQuestion] = [
         QuizQuestion(
             image: "The Godfather",
             text: "Рейтинг этого фильма больше чем 6?",
@@ -61,16 +58,16 @@ final class MovieQuizViewController: UIViewController {
             correctAnswer: false)
     ]
     
-    fileprivate var currentQuestionIndex = 0
-    fileprivate var correctAnswers = 0
+    private var currentQuestionIndex: Int = 0
+    private var correctAnswers: Int = 0
     
-    fileprivate struct QuizStepViewModel{
+    private struct QuizStepViewModel{
         var image: UIImage
         var question: String
         var questionNumber: String
     }
     
-    fileprivate struct QuizResultsViewModel {
+    private struct QuizResultsViewModel {
         let title: String
         let text: String
         let buttonText: String
@@ -79,9 +76,10 @@ final class MovieQuizViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         show(quiz: convert(model: questions[0]))
+        imageView.layer.cornerRadius = 20
     }
     
-    fileprivate func convert(model: QuizQuestion) -> QuizStepViewModel {
+    private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text,
@@ -89,13 +87,13 @@ final class MovieQuizViewController: UIViewController {
         return questionStep
     }
     
-    fileprivate func show(quiz step: QuizStepViewModel) {
+    private func show(quiz step: QuizStepViewModel) {
         imageView.image = step.image
         textLabel.text = step.question
         counterLabel.text = step.questionNumber
     }
     
-    fileprivate func show(quiz result: QuizResultsViewModel) {
+    private func show(quiz result: QuizResultsViewModel) {
         
         let alert = UIAlertController(
             title: result.title,
@@ -114,21 +112,23 @@ final class MovieQuizViewController: UIViewController {
         self.present(alert, animated: true, completion: nil)
     }
     
-    fileprivate func showAnswerResult(isCorrect: Bool) {
+    private func showAnswerResult(isCorrect: Bool) {
         if isCorrect {
             correctAnswers += 1
         }
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 8
         imageView.layer.borderColor =  isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-        imageView.layer.cornerRadius = 20
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.showNextQuestionOrResults()
+            self.imageView.layer.borderColor = UIColor.clear.cgColor
+            self.noButton.isEnabled = true
+            self.yesButton.isEnabled = true
         }
     }
     
-    fileprivate func showNextQuestionOrResults() {
+    private func showNextQuestionOrResults() {
         if currentQuestionIndex == questions.count - 1 { // 1
             let viewModel = QuizResultsViewModel (
                 title: "Этот раунд окончен!",
@@ -145,13 +145,17 @@ final class MovieQuizViewController: UIViewController {
         }
     }
     
-    @IBAction fileprivate func noButtonClicked(_ sender: UIButton) {
+    @IBAction private func noButtonClicked(_ sender: UIButton) {
+        noButton.isEnabled = false
+        yesButton.isEnabled = false
         let isCorrect = !questions[currentQuestionIndex].correctAnswer
         showAnswerResult(isCorrect: isCorrect)
     }
     
     
-    @IBAction fileprivate func yesButtonClicked(_ sender: UIButton) {
+    @IBAction private func yesButtonClicked(_ sender: UIButton) {
+        noButton.isEnabled = false
+        yesButton.isEnabled = false
         let isCorrect = questions[currentQuestionIndex].correctAnswer
         showAnswerResult(isCorrect: isCorrect)
     }
